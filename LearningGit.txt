@@ -1,0 +1,462 @@
+# Git & GitHub Lab Journey – Monish
+
+## Task 0 – Configure Git
+
+### What I did
+
+First, I checked whether Git was working:
+
+git \-\-version
+
+I configured my name and email:
+
+git config \-\-global user.name "Monish Ramchandani"
+
+git config \-\-global user.email "Monish.ramchandani@accenture.com"
+
+Then I checked my configuration:
+
+git config \-\-list
+
+### Problem I faced
+
+At one point I received:
+
+git is not recognized
+
+### Why?
+
+Windows could not find the Git program. Git was either missing from its normal location or was not available through PATH.
+
+### How I solved it
+
+I checked for Git using:
+
+where.exe git
+
+I also checked whether git.exe existed in the normal Git installation locations.
+
+Git was not found, so I reinstalled **Git for Windows**.
+
+After installation I opened a new terminal and ran:
+
+git \-\-version
+
+It returned:
+
+git version 2.56.0.windows.4
+
+This confirmed that Git was working again.
+
+### What I learned
+
+git \-\-version is a simple way to check whether Git is installed and available to the terminal.
+
+---
+
+# Task 1 – Create My First Git Repository
+
+I created a folder:
+
+GitHub\_Lab\_Monish
+
+I entered the folder and initialized Git:
+
+git init
+
+### Why?
+
+git init turns a normal folder into a **Git repository**, allowing Git to track changes inside it.
+
+Then I created:
+
+file.txt
+
+I checked it:
+
+git status
+
+Git showed the file as **untracked**.
+
+### Why?
+
+An untracked file is a file Git can see but is not tracking yet.
+
+I added it:
+
+git add file.txt
+
+### Why?
+
+git add puts the file into the **staging area**, meaning I want the file included in my next commit.
+
+Then I committed it:
+
+git commit \-m "task1Monish"
+
+### Why?
+
+A commit creates a saved point in the Git history.
+
+I checked:
+
+git status
+
+Eventually I got:
+
+nothing to commit, working tree clean
+
+### What does that mean?
+
+It means all my current changes have already been committed.
+
+### What I learned
+
+The basic Git workflow is:
+
+**Create/Edit → Add → Commit**
+
+---
+
+# Task 2 – Branching and Merging
+
+First, I created:
+
+index.html
+
+Then:
+
+git add index.html
+
+git commit \-m "Add index page"
+
+Next, I created the feature branch:
+
+git switch \-c feature/main\-page
+
+### Why create a branch?
+
+A branch lets me work on a new feature separately without directly changing my main branch.
+
+I changed index.html and added the landing\-page content.
+
+Then:
+
+git add index.html
+
+git commit \-m "Update landing page"
+
+After finishing my feature, I returned to the main branch:
+
+git switch main
+
+Then I merged the feature:
+
+git merge feature/main\-page
+
+Git showed:
+
+Fast\-forward
+
+### What did Fast\-forward mean?
+
+My main branch had no separate newer changes.
+
+Git could simply move main forward to include the feature branch commits, so there was no conflict.
+
+I checked:
+
+git status
+
+Git showed:
+
+On branch main
+
+nothing to commit, working tree clean
+
+This told me Task 2 had been committed and merged correctly.
+
+---
+
+# Mistake – PowerShell Commands in CMD
+
+I also made an important terminal mistake.
+
+I tried commands such as:
+
+Set\-Content
+
+and:
+
+$HOME
+
+But I was using **Windows Command Prompt (CMD)** instead of PowerShell.
+
+I received errors such as:
+
+is not recognized as an internal or external command
+
+### Why?
+
+Set\-Content and $HOME are PowerShell syntax, not normal CMD syntax.
+
+### How I solved it
+
+I used commands written specifically for CMD instead.
+
+For example, instead of PowerShell Set\-Content, I used CMD's echo with output redirection:
+
+echo This is my Task 1>file.txt
+
+### What I learned
+
+Always know which terminal I am using:
+
+**PowerShell commands ≠ CMD commands**
+
+Git commands such as git status, git add, and git commit work in both, but the commands for creating/editing files can be different.
+
+---
+
+# Connecting My Local Repository to GitHub
+
+My GitHub username is:
+
+swordstokeys
+
+I connected the local repository to my GitHub repository using a remote called:
+
+origin
+
+Then I tried:
+
+git push \-u origin main
+
+---
+
+# Problem – GitHub Password Did Not Work
+
+GitHub asked for my username and password.
+
+I entered my username, but GitHub returned:
+
+Invalid username or token.
+
+It also said:
+
+Password authentication is not supported for Git operations.
+
+### Why?
+
+My normal GitHub account password cannot be used as the HTTPS Git password.
+
+### How I solved it
+
+I configured **Git Credential Manager**:
+
+git config \-\-global credential.helper manager
+
+Then I tried the push again and authenticated with GitHub.
+
+### What I learned
+
+Git authentication and my Git commit identity are different things.
+
+My Git configuration tells Git who makes a commit.
+
+GitHub authentication proves that I have permission to push to my GitHub repository.
+
+---
+
+# Problem – Push Rejected
+
+After authentication worked, I received:
+
+[rejected] main \-> main (fetch first)
+
+### Why?
+
+My GitHub repository already had earlier work in it.
+
+My new local repository also had its own history.
+
+Git was basically saying:
+
+**"GitHub has commits that you do not have locally. I will not overwrite them automatically."**
+
+### Why is this useful?
+
+It protects existing work from accidentally being deleted.
+
+### How I solved it
+
+Instead of force\-pushing, I brought the remote history into my local repository:
+
+git pull origin main \-\-allow\-unrelated\-histories \-\-no\-rebase
+
+### Why \-\-allow\-unrelated\-histories?
+
+The local repository and GitHub repository had been created separately, so Git saw them as two different histories.
+
+This option told Git:
+
+**"I understand these histories started separately. Allow me to combine them."**
+
+---
+
+# Problem – Merge Conflict
+
+During the pull, Git reported:
+
+CONFLICT (add/add): Merge conflict in file.txt
+
+### Why?
+
+Both repositories had independently created a file called:
+
+file.txt
+
+Git could not automatically decide which version I wanted.
+
+### How I solved it
+
+I wanted to keep the file.txt from my **current local Task 0/1/2 repository**.
+
+So I used:
+
+git checkout \-\-ours file.txt
+
+### What does \-\-ours mean?
+
+In this situation:
+
+**ours = my current local version**
+
+**theirs = the version coming from the other Git history**
+
+Then I told Git the conflict was resolved:
+
+git add file.txt
+
+Finally I completed the merge:
+
+git commit \-m "Merge existing GitHub repository"
+
+Git created the merge commit:
+
+9358e5f Merge existing GitHub repository
+
+Then I could push again:
+
+git push \-u origin main
+
+---
+
+# My Simple Git Workflow
+
+The main workflow I learned is:
+
+**1\. Make/change files**
+
+↓
+
+**2\. Check**
+
+git status
+
+↓
+
+**3\. Stage**
+
+git add .
+
+↓
+
+**4\. Save in Git**
+
+git commit \-m "message"
+
+↓
+
+**5\. Send to GitHub**
+
+git push
+
+For feature development:
+
+**main → create branch → make changes → commit → switch to main → merge → push**
+
+---
+
+# Important Commands I Learned
+
+git \-\-version
+
+Checks whether Git is working.
+
+git init
+
+Makes the current folder a Git repository.
+
+git status
+
+Shows what is happening inside the repository.
+
+git add .
+
+Stages all changed files.
+
+git commit \-m "message"
+
+Creates a saved point in Git history.
+
+git branch
+
+Shows my branches.
+
+git switch \-c branch\-name
+
+Creates and switches to a new branch.
+
+git switch main
+
+Returns to the main branch.
+
+git merge branch\-name
+
+Combines another branch into my current branch.
+
+git log \-\-oneline
+
+Shows commit history in a simple format.
+
+git pull
+
+Gets changes from the remote repository and integrates them locally.
+
+git push
+
+Sends my local commits to GitHub.
+
+---
+
+# Biggest Lesson
+
+Before this lab, I thought Git and GitHub were basically the same thing.
+
+Now I understand the difference:
+
+**Git = version control on my computer.**
+
+**GitHub = remote place where I can store and share my Git repository.**
+
+Also:
+
+**git add** **→ prepare changes**
+
+**git commit** **→ save changes locally**
+
+**git push** **→ upload commits to GitHub**
+
+When an error happens, I should read what Git is telling me instead of immediately starting again. Most of the errors in this lab happened for a reason, and understanding that reason helped me fix the problem without losing my work.
+
